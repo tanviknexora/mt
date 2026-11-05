@@ -7,9 +7,10 @@ append folder, standardized to one schema with CreatedAt as a datetime.
 Requires polars >= 1.0 (plus pyarrow if you call it with as_pandas=True).
 
 Usage from another script or notebook:
-    from ledger_loader import get_final_ledger
+    from ledger_loader import get_final_ledger, scan_ledger
     ledger = get_final_ledger()                   # polars DataFrame
     ledger_pd = get_final_ledger(as_pandas=True)  # pandas DataFrame, for existing pandas code
+    lazy = scan_ledger()                          # LazyFrame: filter first, then .collect()
 """
 
 import warnings
@@ -18,8 +19,8 @@ from pathlib import Path
 import polars as pl
 
 # ---- Configuration ---------------------------------------------------------
-BASE_LEDGER_PATH = Path(r"C:\Users\Administrator\Videos\led\Ledger.csv")
-APPEND_FOLDER = Path(r"C:\Users\Administrator\Videos\zynix_led_append")
+BASE_LEDGER_PATH = Path(r"C:\Users\Administrator\Videos\Office\led\Ledger.csv")
+APPEND_FOLDER = Path(r"C:\Users\Administrator\Videos\Office\zynix_led_append")
 
 BASE_DATE_FORMAT = "%d %b %Y %H:%M:%S"    # e.g. "05 Oct 2026 09:30:15"
 APPEND_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"  # applied to the first 19 chars, see below
@@ -96,21 +97,21 @@ def scan_append_files(folder=APPEND_FOLDER) -> pl.LazyFrame | None:
 
 
 # ---- Main entry point ------------------------------------------------------
-def get_final_ledger(
+def scan_ledger(
     base_path=BASE_LEDGER_PATH,
     append_folder=APPEND_FOLDER,
     columns=FINAL_COLUMNS,
     only_new_appends=False,
-    as_pandas=False,
-):
+) -> pl.LazyFrame:
     """
-    Return the combined ledger (base + appends).
+    The combined ledger (base + appends) as a LazyFrame: nothing is read until .collect().
+
+    Filter it before collecting to load only what you need, e.g. one month:
+        scan_ledger().filter(pl.col("CreatedAt") >= start).collect()
 
     columns          : columns to keep; pass None to keep every column.
-                       Unused columns (e.g. Narration) are never parsed.
     only_new_appends : if True, drop appended rows at or before the base
                        ledger's latest CreatedAt (guards against overlap).
-    as_pandas        : if True, return a pandas DataFrame instead of polars.
     """
     base = scan_base_ledger(base_path).with_columns(_is_base=pl.lit(True))
     appends = scan_append_files(append_folder)
@@ -129,8 +130,26 @@ def get_final_ledger(
     final = final.drop("_is_base")
     if columns is not None:
         final = final.select(list(columns))
+    return final
 
-    df = final.collect()
+
+def get_final_ledger(
+    base_path=BASE_LEDGER_PATH,
+    append_folder=APPEND_FOLDER,
+    columns=FINAL_COLUMNS,
+    only_new_appends=False,
+    as_pandas=False,
+):
+    """
+    Return the combined ledger (base + appends), fully loaded.
+
+    columns          : columns to keep; pass None to keep every column.
+                       Unused columns (e.g. Narration) are never parsed.
+    only_new_appends : if True, drop appended rows at or before the base
+                       ledger's latest CreatedAt (guards against overlap).
+    as_pandas        : if True, return a pandas DataFrame instead of polars.
+    """
+    df = scan_ledger(base_path, append_folder, columns, only_new_appends).collect()
 
     if "CreatedAt" in df.columns:
         n_bad = df["CreatedAt"].null_count()
