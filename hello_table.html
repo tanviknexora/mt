@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My first table</title>
+  <style>
+    /* 1. The page */
+    body { font-family: Arial, sans-serif; color: #1f2937; background: #f7f8fa; margin: 0; }
+    header { background: #1f3864; color: white; padding: 14px 24px; }
+    main { max-width: 900px; margin: 24px auto; padding: 0 24px; }
+
+    /* 2. A white box with a border: reused for anything we want to frame */
+    .card { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; }
+
+    /* 3. The table */
+    table { border-collapse: collapse; width: 100%; font-size: 14px; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+    th { background: #ffe699; }
+    tbody tr:nth-child(even) { background: #f4f6fa; }   /* striped rows */
+    tbody tr:hover { background: #eef2f8; }             /* highlight the row under the mouse */
+    .num { text-align: right; }                         /* numbers line up on the right */
+    .loss { color: #b91c1c; }                           /* red for negative numbers */
+  </style>
+</head>
+<body>
+  <header>
+    <strong>Nexora Reports</strong>
+  </header>
+
+  <main>
+    <h1>Broker summary</h1>
+    <p>August 2026. Numbers are in USD.</p>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Broker</th>
+            <th>Clients</th>
+            <th class="num">Profit</th>
+            <th class="num">Loss</th>
+            <th class="num">Difference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ahmad Ali</td>
+            <td>12</td>
+            <td class="num">4,250.00</td>
+            <td class="num">9,800.50</td>
+            <td class="num loss">-5,550.50</td>
+          </tr>
+          <tr>
+            <td>Sara Khan</td>
+            <td>8</td>
+            <td class="num">7,100.00</td>
+            <td class="num">2,300.00</td>
+            <td class="num">4,800.00</td>
+          </tr>
+          <tr>
+            <td>Ravi Kumar</td>
+            <td>5</td>
+            <td class="num">950.25</td>
+            <td class="num">1,200.00</td>
+            <td class="num loss">-249.75</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table">Read more about HTML tables</a></p>
+  </main>
+</body>
+</html>
